@@ -10,6 +10,8 @@ require 'airbrake'
 require 'extensions'
 require 'scm_router'
 require 'scm_checkout'
+require 'opscode_router'
+require 'opscode_checkout'
 require 'gems_router'
 require 'featured_router'
 require 'stdlib_router'
@@ -31,8 +33,8 @@ class DocServer < Sinatra::Base
   end
 
   def self.load_configuration
-    set :name, 'RubyDoc.info'
-    set :url, 'http://rubydoc.info'
+    set :name, 'ChefDoc.info'
+    set :url, 'http://chefdoc.info'
 
     set :disallowed_projects, []
     set :disallowed_gems, []
@@ -81,6 +83,13 @@ class DocServer < Sinatra::Base
     set :gems_adapter, RackAdapter.new(*opts.values)
   rescue Errno::ENOENT
     log.error "No remote_gems file to load remote gems from, not serving gems."
+  end
+
+  def self.load_opscode_adapter
+    opts = adapter_options
+    opts[:options][:router] = OpscodeRouter
+    opts[:libraries] = OpscodeLibraryStore.new
+    set :opscode_adapter, RackAdapter.new(*opts.values)
   end
 
   def self.load_scm_adapter
@@ -179,6 +188,7 @@ class DocServer < Sinatra::Base
     load_configuration
     load_gems_adapter
     load_scm_adapter
+    load_opscode_adapter
     load_featured_adapter
     load_stdlib_adapter
     copy_static_files
@@ -369,6 +379,14 @@ class DocServer < Sinatra::Base
   end
 
   # Simple search interfaces
+
+  get %r{^/find/opscode} do
+    @search = params[:q]
+    @adapter = settings.opscode_adapter
+    @libraries = @adapter.libraries
+    @sorted_libraries = @libraries.sorted_by_project("*#{@search}")
+    erb(:scm_index)
+  end
 
   get %r{^/find/github} do
     @search = params[:q]
