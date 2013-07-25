@@ -1,23 +1,23 @@
 # Sample configuration file
 
-# Display name. Defaults to RubyDoc.info
-# name: RubyDoc.info
+# Display name.
+name: ChefDoc.info
 
-# Base URL. Defaults to http://rubydoc.info
-# url: http://rubydoc.info
+# Base URL.
+url: http://chefdoc.info
 
 # If you have Airbrake, uncomment the following line and add your API key:
-# airbrake: YOUR_API_KEY
+airbrake: 8d0438aa52fec595f1a0345b9e1032d7
 
 # If you use DISQUS for comments, uncomment the following line:
 # disqus: YOUR_DISQUS_USERNAME
 
 # If you want to use Clicky, uncomment the following line and add your Site ID:
-# clicky: YOUR_SITE_ID
+clicky: 100637538
 
 # If you want to use Google Analytics, uncomment the following line and add
 # your Site ID:
-# google_analytics: YOUR_SITE_ID
+google_analytics: UA-42675247-1
 
 # If you want to add a Tender help desk support link, uncomment the following
 # line and add your Site ID:
@@ -32,6 +32,9 @@
 # path to the library root relative to repos/featured. You can also use an
 # absolute path.
 #
+featured:
+  yard: yard
+  yard-chef: yard-chef
 # featured:
 #   yard: yard
 #   ruby: /path/to/ruby_core
