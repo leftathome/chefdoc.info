@@ -20,7 +20,7 @@ set :deploy_via, :remote_cache
 default_run_options[:pty] = true
 
 # scm settings
-set :repository, "https://github.com/leftathome/rubydoc.info.git"
+set :repository, "https://github.com/leftathome/chefdoc.info.git"
 set :scm, "git"
 set :branch, "master"
 #set :git_enable_submodules, 1
@@ -44,7 +44,7 @@ namespace :deploy do
   end
 end
 
-namespace :rubydoc do
+namespace :chefdoc do
   task :symlink, :roles => [:app] do
     run "ln -sf #{shared_path}/config.yaml #{release_path}/config.yaml"
     run "ln -sf #{shared_path}/repos #{release_path}/repos"
@@ -53,6 +53,6 @@ namespace :rubydoc do
   end
 end
 
-after "deploy:create_symlink", "rubydoc:symlink"
+after "deploy:create_symlink", "chefdoc:symlink"
 after "deploy:restart", "unicorn:reload"
 after "deploy:restart", "unicorn:restart"
