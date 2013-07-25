@@ -48,10 +48,11 @@ namespace :rubydoc do
   task :symlink, :roles => [:app] do
     run "ln -s #{shared_path}/config.yaml #{release_path}/config.yaml"
     run "ln -s #{shared_path}/repos #{release_path}/repos"
+    run "ln -s #{shared_path}/pids #{release_path}/tmp/pids"
     run "ln -s #{shared_path}/yard #{release_path}/yard"
   end
 end
 
-after "deploy:symlink", "rubydoc:symlink"
+after "deploy:create_symlink", "rubydoc:symlink"
 after "deploy:restart", "unicorn:reload"
 after "deploy:restart", "unicorn:restart"
