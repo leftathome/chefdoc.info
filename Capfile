@@ -46,10 +46,10 @@ end
 
 namespace :rubydoc do
   task :symlink, :roles => [:app] do
-    run "ln -s #{shared_path}/config.yaml #{release_path}/config.yaml"
-    run "ln -s #{shared_path}/repos #{release_path}/repos"
-    run "ln -s #{shared_path}/pids #{release_path}/tmp/pids"
-    run "ln -s #{shared_path}/yard #{release_path}/yard"
+    run "ln -sf #{shared_path}/config.yaml #{release_path}/config.yaml"
+    run "ln -sf #{shared_path}/repos #{release_path}/repos"
+    run "ln -sf #{shared_path}/pids #{release_path}/tmp/pids"
+    run "ln -sf #{shared_path}/yard #{release_path}/yard"
   end
 end
 
