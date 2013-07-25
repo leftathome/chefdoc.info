@@ -1,26 +1,29 @@
 require 'capistrano/version'
 require 'rubygems'
+require 'capistrano-unicorn'
 load 'deploy' if respond_to?(:namespace) # cap2 differentiator
 
 # standard settings
-set :application, "rubydoc.info"
-set :domain, "rubydoc.info"
-role :app, domain
-role :web, domain
-role :db,  domain, :primary => true
+set :application, "chefdoc.info"
+#set :domain, "chefdoc.info"
+#role :app, domain
+#role :web, domain
+#role :db,  domain, :primary => true
 
 # environment settings
-set :user, "deploy"
-set :group, "deploy"
+server "ec2-204-236-162-161.us-west-1.compute.amazonaws.com", :app, :web, :db, :primary => true
+set :user, "ec2-user"
+set :group, "www"
 set :deploy_to, "/var/www/apps/#{application}"
 set :deploy_via, :remote_cache
 default_run_options[:pty] = true
 
 # scm settings
-set :repository, "git://github.com/lsegal/rubydoc.info.git"
+set :repository, "https://github.com/leftathome/rubydoc.info.git"
 set :scm, "git"
 set :branch, "master"
 #set :git_enable_submodules, 1
+
 
 namespace :deploy do
   task :restart do
@@ -49,3 +52,5 @@ namespace :rubydoc do
 end
 
 after "deploy:symlink", "rubydoc:symlink"
+after "deploy:restart", "unicorn:reload"
+after "deploy:restart", "unicorn:restart"
