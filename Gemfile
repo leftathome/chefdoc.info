@@ -22,6 +22,7 @@ gem 'yard', :git => 'git://github.com/lsegal/yard'
 gem 'yard-rails'
 gem 'yard-kramdown'
 gem 'yard-sd'
+gem 'yard-chef'
 gem 'i18n'
 
 group :test do
