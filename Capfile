@@ -1,6 +1,7 @@
 require 'capistrano/version'
 require 'rubygems'
 require 'capistrano-unicorn'
+require 'bundler/capistrano'
 load 'deploy' if respond_to?(:namespace) # cap2 differentiator
 
 # standard settings
