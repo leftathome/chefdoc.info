@@ -1,6 +1,6 @@
 app_dir = File.expand_path(File.dirname(__FILE__))
 worker_processes 3
-working_directory app_dir
+working_directory app_dir+"/.."
 #listen "#{app_dir}/tmp/sock/unicorn.sock"
 listen 8080, :tcp_nopush => true
 pid "#{app_dir}/tmp/pids/unicorn.pid"
