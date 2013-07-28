@@ -1,8 +1,8 @@
 GIT
   remote: git://github.com/lsegal/yard
-  revision: 5e0a7067e11e5006e5b08d2583c9953fe18b656c
+  revision: 802170e915978d23d932619fe693c3842aa1991e
   specs:
-    yard (0.8.6.2)
+    yard (0.8.7)
 
 GEM
   remote: https://rubygems.org/
@@ -22,16 +22,54 @@ GEM
     atomic (1.1.10)
     bluecloth (2.2.0)
     builder (3.2.2)
+    chef (11.6.0)
+      erubis
+      highline (>= 1.6.9)
+      json (>= 1.4.4, <= 1.7.7)
+      mixlib-authentication (>= 1.3.0)
+      mixlib-cli (~> 1.3.0)
+      mixlib-config (>= 1.1.2)
+      mixlib-log (>= 1.3.0)
+      mixlib-shellout
+      net-ssh (~> 2.6)
+      net-ssh-multi (~> 1.1.0)
+      ohai (>= 0.6.0)
+      rest-client (>= 1.0.4, < 1.7.0)
+      yajl-ruby (~> 1.1)
     diff-lcs (1.2.4)
+    erubis (2.7.0)
     github-markup (0.7.5)
+    highline (1.6.19)
     i18n (0.6.4)
-    json (1.8.0)
+    ipaddress (0.8.0)
+    json (1.7.7)
     kgio (2.8.0)
     kramdown (1.1.0)
     maruku (0.6.1)
       syntax (>= 1.0.0)
+    mime-types (1.23)
     minitest (4.7.5)
+    mixlib-authentication (1.3.0)
+      mixlib-log
+    mixlib-cli (1.3.0)
+    mixlib-config (1.1.2)
+    mixlib-log (1.6.0)
+    mixlib-shellout (1.2.0)
     multi_json (1.7.7)
+    net-ssh (2.6.8)
+    net-ssh-gateway (1.2.0)
+      net-ssh (>= 2.6.5)
+    net-ssh-multi (1.1)
+      net-ssh (>= 2.1.4)
+      net-ssh-gateway (>= 0.99.0)
+    ohai (6.18.0)
+      ipaddress
+      mixlib-cli
+      mixlib-config
+      mixlib-log
+      mixlib-shellout
+      systemu
+      yajl-ruby
     rack (1.5.2)
     rack-protection (1.5.0)
       rack
@@ -40,6 +78,8 @@ GEM
     rdiscount (2.1.6)
     rdoc (3.9.4)
     redcarpet (2.1.1)
+    rest-client (1.6.7)
+      mime-types (>= 1.16)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -55,6 +95,7 @@ GEM
       tilt (~> 1.3, >= 1.3.4)
     sqlite3 (1.3.7)
     syntax (1.0.0)
+    systemu (2.5.2)
     thread_safe (0.1.2)
       atomic
     tilt (1.4.1)
@@ -63,7 +104,8 @@ GEM
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
-    yard-chef (1.0.0)
+    yajl-ruby (1.1.0)
+    yard-chef (1.0.1)
       redcarpet (~> 2.1.1)
       yard (~> 0.7)
     yard-kramdown (0.0.1)
@@ -80,6 +122,7 @@ DEPENDENCIES
   airbrake
   asciidoctor
   bluecloth
+  chef
   github-markup
   i18n
   json
