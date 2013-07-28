@@ -105,7 +105,7 @@ GEM
       rack
       raindrops (~> 0.7)
     yajl-ruby (1.1.0)
-    yard-chef (1.0.1)
+    yard-chef (1.0.0)
       redcarpet (~> 2.1.1)
       yard (~> 0.7)
     yard-kramdown (0.0.1)
