@@ -5,7 +5,7 @@ task :default => 'gems:update'
 namespace :server do
   desc 'Start the server'
   task :start do
-    sh "unicorn -E production -D -c unicorn.conf.rb"
+    sh "unicorn -E production -D -c config/unicorn.rb"
   end
 
   desc 'Restart the server'
@@ -24,6 +24,14 @@ namespace :gems do
   task :update do
     puts ">> Updating Remote Gems file (local cache)"
     load('scripts/update_remote_gems.rb')
+  end
+end
+
+namespace :cookbooks do
+  desc 'Update cookbook list from community.opscode.com'
+  task :update do
+    puts ">> Updating Remote Cookbooks file (local cache)"
+    load('scripts/update_opscode.rb')
   end
 end
 
