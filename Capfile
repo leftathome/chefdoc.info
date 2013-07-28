@@ -12,8 +12,8 @@ set :application, "chefdoc.info"
 #role :db,  domain, :primary => true
 
 # environment settings
-server "ec2-204-236-162-161.us-west-1.compute.amazonaws.com", :app, :web, :db, :primary => true
-set :user, "ec2-user"
+server "chefdoc.info", :app, :web, :db, :primary => true
+set :user, "chefdoc"
 set :group, "www"
 set :deploy_to, "/var/www/apps/#{application}"
 set :deploy_via, :remote_cache
@@ -35,7 +35,7 @@ namespace :deploy do
     # no migrations to run
     update_code
 
-    run "cp #{release_path}/config.yaml.sample #{shared_path}/config.yaml"
+    run "cp #{release_path}/config/config.yaml.sample #{shared_path}/config.yaml"
     run "mkdir -p #{shared_path}/repos"
     run "git clone git://github.com/lsegal/yard.git #{shared_path}/yard"
 
@@ -50,6 +50,7 @@ namespace :chefdoc do
     run "ln -sf #{shared_path}/repos #{release_path}/repos"
     run "ln -sf #{shared_path}/pids #{release_path}/tmp/pids"
     run "ln -sf #{shared_path}/yard #{release_path}/yard"
+    run "ln -sf #{shared_path}/data #{release_path}/data"
   end
 end
 
