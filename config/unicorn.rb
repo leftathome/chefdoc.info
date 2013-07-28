@@ -3,7 +3,7 @@ worker_processes 2
 working_directory app_dir
 #listen "#{app_dir}/tmp/sock/unicorn.sock"
 listen 8080, :tcp_nopush => true
-user 'ec2-user'
+user "chefdoc"
 # look, we're on a budget, okay?
 timeout 120
 pid "#{app_dir}/tmp/pids/unicorn.pid"
