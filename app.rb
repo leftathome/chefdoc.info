@@ -322,9 +322,6 @@ class DocServer < Sinatra::Base
     cache erb(:opscode_index)
   end
 
-  get %r{^/(?:(?:search|list)/)?opscode/([^/]+)/([^/]+)} do |cookbook, version|
-  end
-
   # list SCM-sourced projects by letter, or show entire index
   get %r{^/github(?:/([a-z])?)?$} do |letter|
     if letter.nil?
@@ -370,6 +367,18 @@ class DocServer < Sinatra::Base
     result
   end
 
+  get %r{^/(?:(?:search|list)/)?opscode/([^/]+)} do |cbname|
+    return status(503) && "Cannot parse this cookbook" if settings.disallowed_cookbooks.include?(cbname)
+    if settings.whitelisted_cookbooks.include?(cbname)
+      puts "Dropping safe mode for #{cbname}"
+      YARD::Config.options[:safe_mode] = false
+    end
+    @cbname = cbname
+    result = settings.opscode_adapter.call(env)
+    return status(404) && erb(:cookbook_404) if result.first == 404
+    result
+  end
+
   # Stdlib
 
   get %r{^/(?:(?:search|list)/)?stdlib/([^/]+)} do |libname|
@@ -404,20 +413,20 @@ class DocServer < Sinatra::Base
 
   # Simple search interfaces
 
-  get %r{^/find/opscode} do
-    @search = params[:q]
-    @adapter = settings.opscode_adapter
-    @libraries = @adapter.libraries
-    @sorted_libraries = @libraries.sorted_by_project("*#{@search}")
-    erb(:scm_index)
-  end
-
   get %r{^/find/github} do
     @search = params[:q]
     @adapter = settings.scm_adapter
     @libraries = @adapter.libraries
     @sorted_libraries = @libraries.sorted_by_project("*#{@search}")
     erb(:scm_index)
+  end
+
+  get %r{^/find/opscode} do
+    self.class.load_opscode_adapter unless defined? settings.opscode_adapter
+    @search = params[:q]
+    @adapter = settings.opscode_adapter
+    @libraries = @adapter.libraries.find_all {|k,v| k.match(/#{Regexp.quote @search}/) }
+    erb(:opscode_index)
   end
 
   get %r{^/find/gems} do
