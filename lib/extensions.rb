@@ -141,6 +141,9 @@ module YARD
         SourceCleaner.new(source_path).clean
       end
     end
+  # Empty shell for now, we will extend here if necessary.
+  class CookbookVersion < LibraryVersion
+  end
   end
 
   module CLI
