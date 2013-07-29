@@ -166,7 +166,7 @@ module YARD
             open(url) do |io|
               expand_cookbook(io)
               generate_yardoc
-              clean_source
+              #clean_source
             end
             self.yardoc_file = yfile
           rescue OpenURI::HTTPError
@@ -221,7 +221,7 @@ module YARD
       # we use the yard-chef plugin on cookbooks.
       def generate_yardoc
         `cd #{source_path} &&
-          #{YARD::ROOT}/../bin/yardoc --plugin yard-chef -n -q --safe &&
+          #{YARD::ROOT}/../bin/yardoc --plugin yard-chef -n -q &&
           touch .yardoc/complete`
       end
   end
@@ -231,7 +231,7 @@ module YARD
     class Yardoc
       def yardopts(file = options_file)
         list = IO.read(file).shell_split
-        list.map {|a| %w(--plugin yard-chef -c --use-cache --db -b --query).include?(a) ? '-o' : a }
+        list.map {|a| %w(--plugin yard-chef -c --use-cache --db -b ).include?(a) ? '-o' : a }
       rescue Errno::ENOENT
         []
       end
