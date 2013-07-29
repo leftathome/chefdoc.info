@@ -198,10 +198,8 @@ module YARD
 	  tar_extract = Gem::Package::TarReader.new(Zlib::GzipReader.wrap(io))
 	  tar_extract.rewind
 	  tar_extract.each do |entry|
-	    puts "--- considering #{entry.full_name} ---"
 	    fname = entry.full_name.sub("#{name}/","")
 	    next if fname == ""
-	    puts "------- I call it #{fname}"
 	    file = File.join(source_path, fname)
 	    begin
 	    if entry.directory?
@@ -219,6 +217,13 @@ module YARD
 	  end
         end
       end
+
+      # we use the yard-chef plugin on cookbooks.
+      def generate_yardoc
+        `cd #{source_path} &&
+          #{YARD::ROOT}/../bin/yardoc --plugin yard-chef -n -q --safe &&
+          touch .yardoc/complete`
+      end
   end
   end
 
@@ -226,7 +231,7 @@ module YARD
     class Yardoc
       def yardopts(file = options_file)
         list = IO.read(file).shell_split
-        list.map {|a| %w(-c --use-cache --db -b --query).include?(a) ? '-o' : a }
+        list.map {|a| %w(--plugin yard-chef -c --use-cache --db -b --query).include?(a) ? '-o' : a }
       rescue Errno::ENOENT
         []
       end
