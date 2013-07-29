@@ -316,16 +316,10 @@ class DocServer < Sinatra::Base
   
   # list Opscode-sourced cookbooks by letter, or show entire index
   get %r{^/opscode(?:/([a-z])?)?$} do |letter|
-    if letter.nil?
-      @adapter = settings.opscode_adapter
-      @libraries = @adapter.libraries
-      cache erb(:opscode_index)
-    else
-      @letter = letter
-      @adapter = settings.opscode_adapter
-      @libraries = @adapter.libraries.find_all {|k, v| k[0].downcase == @letter }
-      cache erb(:opscode_index)
-    end
+    @letter = letter || 'a'
+    @adapter = settings.opscode_adapter
+    @libraries = @adapter.libraries.find_all {|k, v| k[0].downcase == @letter }
+    cache erb(:opscode_index)
   end
 
   get %r{^/(?:(?:search|list)/)?opscode/([^/]+)/([^/]+)} do |cookbook, version|
