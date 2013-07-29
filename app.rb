@@ -86,10 +86,22 @@ class DocServer < Sinatra::Base
   end
 
   def self.load_opscode_adapter
+    remote_file = REMOTE_CBS_FILE
+    contents = File.readlines(remote_file)
+    puts ">> Loading remote cookbook list..."
     opts = adapter_options
+    contents.each do |line|
+      nameuri, *versions = *line.split(/\s+/)
+      name, uri = nameuri.split(":",2)
+      opts[:libraries][name] = versions.map do |v|
+        CookbookVersion.new(name, v, nil, :remote_cookbook)
+      end
+      puts "Libraries[#{name}] is now: #{opts[:libraries][name]}"
+    end
     opts[:options][:router] = OpscodeRouter
-    opts[:libraries] = OpscodeLibraryStore.new
     set :opscode_adapter, RackAdapter.new(*opts.values)
+  rescue Errno::ENOENT
+    log.error "No remote_cookbooks file to load remote cookbooks index from, not serving cookbooks.  Run that rake task again."
   end
 
   def self.load_scm_adapter
@@ -123,8 +135,8 @@ class DocServer < Sinatra::Base
       end
     end
     set :featured_adapter, RackAdapter.new(*opts.values)
-  rescue Errno::ENOENT
-    log.error "No featured section in config.yaml, not serving featured docs."
+  rescue Errno::ENOENT => e
+    log.error "No featured section in config.yaml, not serving featured docs." #{e.inspect}"
     set :featured_adapter, nil
   end
 
@@ -301,7 +313,25 @@ class DocServer < Sinatra::Base
   end
 
   # Main URL handlers
+  
+  # list Opscode-sourced cookbooks by letter, or show entire index
+  get %r{^/opscode(?:/([a-z])?)?$} do |letter|
+    if letter.nil?
+      @adapter = settings.opscode_adapter
+      @libraries = @adapter.libraries
+      cache erb(:opscode_index)
+    else
+      @letter = letter
+      @adapter = settings.opscode_adapter
+      @libraries = @adapter.libraries.find_all {|k, v| k[0].downcase == @letter }
+      cache erb(:opscode_index)
+    end
+  end
 
+  get %r{^/(?:(?:search|list)/)?opscode/([^/]+)/([^/]+)} do |cookbook, version|
+  end
+
+  # list SCM-sourced projects by letter, or show entire index
   get %r{^/github(?:/([a-z])?)?$} do |letter|
     if letter.nil?
       @adapter = settings.scm_adapter

@@ -1,16 +1,27 @@
 <script type="text/javascript" charset="utf-8">
+  function fixGemLinks() {
+    $('.libraries a').each(function() {
+      var href = $(this).attr('href');
+      if (href.substr(0, 2) == "#/") {
+        $(this).attr('href', href.substr(1));
+      }
+    });
+  }
+
   $(function() { saveIndex('opscode'); });
+  $(fixGemLinks);
 </script>
 
 <div id="content">
   <ul id="nav">
     <li><a href="/featured">Featured</a></li>
     <li><a href="/stdlib">Stdlib</a></li>
-    <li><a href="/gems">RubyGems</a></li>
+    <li><a href="/rubygems">RubyGems</a></li>
     <li class="selected">Opscode</li>
-    <li class="search"><form action="/find/opscode" method="GET"><input type="text" id="docSearch" name="q" value="<%= h @search || 'Search Opscode Community Site' %>"/></form></li>
+    <li><a href="/github">Github</a></li>
+    <li class="search"><form action="/find/opscode" method="GET"><input type="text" id="docSearch" name="q" value="<%= h @search || 'Search Opscode' %>"/></form></li>
   </ul>
-  <h2>Opscode Community Cookbooks  <%= h @search ? 'Search Results' : 'Listing' %> <small>(<a class="framelink" href="#">links without frames</a>)</small></h2>
+  <h2>Opscode <%= h @search ? 'Search Results' : 'Listing' %> <small>(<a class="framelink" href="#">links without frames</a>)</small></h2>
   <ul class="alpha_index">
     <% (?a..?z).each do |letter| %>
       <% if letter == @letter %>
@@ -19,53 +30,36 @@
         <li><a href="/opscode/<%= letter %>"><%= letter.upcase %></a></li>
       <% end %>
     <% end %>
-    <li><a href="/opscode">Latest</a></li>
   </ul>
 
-  <%= erb :checkout, :layout => false %>
-  <ul class="libraries">
-    <% if @sorted_libraries.size == 0 %>
-      <li>No projects match your criteria. You can generate new docs by clicking "Add Project" on top.</li>
-    <% end %>
-    <% @sorted_libraries.each do |project, repos| %>
-      <% next if repos.empty? %>
-      <% master = @libraries.master_fork(project) %>
-      <li>
-        <% username, library_versions = *repos.first %>
-        <% if first_lib = library_versions.find {|l| l.name == master } %>
-          <% library_versions -= [first_lib] %>
-          <a href="/<%= @adapter.router.docs_prefix %>/<%= first_lib.name %>/frames"><strong><%= username %>/<%= project %></strong></a>
-          <% if first_lib.version %>
-            <small>(<%= first_lib.version %><% if library_versions.size > 0 %>,
-              <%= library_versions.reverse[0..2].map {|lib| "<a href=\"/#{@adapter.router.docs_prefix}/#{lib}/frames\">#{lib.version}</a>" }.join(', ') %><% end %>)</small>
-          <% end %>
-          <a href="#" class="project_reload" title="Reload this project"><img class="icon reload" src="/images/reload.png" /></a>
-          <a href="http://community.opscode.com/<%= first_lib.name %>" title="View Opscode Community cookbook page"><img class="icon opscode" src="/images/opscode.png" /></a>
-          <% repos.shift %>
-        <% else %>
-          <strong><%= project %></strong> <small>(No master fork)</small>
+  <% if @search && (exact_match = @libraries.find { |k,v| k == @search }) %>
+    <h3>Exact match</h3>
+    <ul class="libraries">
+      <li class="r1">
+        <% library_versions = exact_match[1].dup %>
+        <% first_lib = library_versions.shift %>
+        <a href="#/<%= @adapter.router.docs_prefix %>/<%= first_lib.name %>/frames"><%= exact_match[0] %></a>
+        <% if first_lib && first_lib.version %>
+          <small>(<%= first_lib.version %><% if library_versions.size > 0 %>,
+            <%= library_versions[1..4].map {|lib| "<a href=\"#/#{@adapter.router.docs_prefix}/#{lib}/frames\">#{lib.version}</a>" }.join(', ') %><% end %>)</small>
         <% end %>
       </li>
-      <% next if repos.empty? %>
-      <ul class="<%= next_row; next_row %>">
-        <li class="alternate"><small>Alternate forks:</small></li>
-        <% repos.each do |username, library_versions| %>
-          <% next if library_versions.empty? %>
-          <li class="alternate_fork">
-            <% library_versions = library_versions.dup %>
-            <% first_lib = library_versions.pop %>
-            <a href="/<%= @adapter.router.docs_prefix %>/<%= first_lib.name %>/frames"><%= username %>/<%= project %></a>
-            <% if first_lib.version %>
-              <small>(<%= first_lib.version %><% if library_versions.size > 0 %>,
-                <%= library_versions.reverse[0..3].map {|lib| "<a href=\"/#{@adapter.router.docs_prefix}/#{lib}/frames\">#{lib.version}</a>" }.join(', ') %><% end %>)</small>
-            <% end %>
-            <a href="#" class="project_reload" title="Reload this project"><img class="icon reload" src="/images/reload.png" /></a>
-            <a href="http://community.opscode.com/<%= first_lib.name %>" title="View Opscode Community cookbook page"><img class="icon opscode" src="/images/opscode.png" /></a>
-          </li>
-        <% end %>
-      </ul>
+    </ul>
+
+    <h3>All matches</h3>
+  <% end %>
+
+  <ul class="libraries">
+    <% @libraries.sort_by {|name, y| name.downcase }.each do |name, library_versions| %>
+    <li class="r<%= @row = @row == 1 ? 2 : 1 %>">
+      <% library_versions = library_versions.dup %>
+      <% first_lib = library_versions.shift %>
+      <a href="#/<%= @adapter.router.docs_prefix %>/<%= first_lib.name %>/frames"><%= name %></a>
+      <% if first_lib && first_lib.version %>
+        <small>(<%= first_lib.version %><% if library_versions.size > 0 %>,
+          <%= library_versions[1..4].map {|lib| "<a href=\"#/#{@adapter.router.docs_prefix}/#{lib}/frames\">#{lib.version}</a>" }.join(', ') %><% end %>)</small>
+      <% end %>
+    </li>
     <% end %>
   </ul>
-
 </div>
-

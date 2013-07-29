@@ -143,6 +143,7 @@ module YARD
     end
   # Empty shell for now, we will extend here if necessary.
   class CookbookVersion < LibraryVersion
+    attr_accessor :url
   end
   end
 
