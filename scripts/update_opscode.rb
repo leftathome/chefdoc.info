@@ -10,7 +10,6 @@ class OpscodeCookbook
 
   def initialize(name, version, url)
     @name, @version, @url = name.to_s, version.to_s, url.to_s
-    puts "Received: #{@name}, #{@version}, #{@url}"
   end
 
   def to_s
@@ -34,8 +33,6 @@ def pick_best_versions(versions)
     uniqversions |= [ver.version]
     (seen[ver.version] ||= []).send(:unshift, ver)
   end
-  puts "Seen: #{seen}"
-  puts "Uniq: #{uniqversions}"
   # look, this doesn't have to be this hard.
   uniqversions
 end
@@ -45,16 +42,17 @@ categories = []
 @ckcss.get_cookbook_list().each do |cookbook, search_results|
 #["1password","zlib"].each do |cookbook|
   cbd = get_cookbook_data(cookbook)
-  cbd["external_url"] = cbd["latest_version"] if cbd["external_url"].nil?
-  u = URI(cbd["external_url"].start_with?("http") ? cbd["external_url"] : "http://" + cbd["external_url"])
+  cbu = cbd["external_url"]
+  if cbd["external_url"].nil?
+    cbu = cbd["latest_version"]
+  u = URI(cbu.start_with?("http") ? cbu : "http://" + cbu)
   # default to http if the url scheme's unqualified
   u.scheme = "http" if u.scheme.nil?
-  puts u.to_s
   cbd["versions"].each do |version_url|
     v = version_url.split("/")[-1].gsub("_",".")
     (libs[cookbook] ||= []) << OpscodeCookbook.new(cookbook, v, u.to_s)
   end
-  categories << cbd["category"]
+  categories << cbd["category"] unless categories.include?(cbd["category"])
 end
 
 categories.flatten!
