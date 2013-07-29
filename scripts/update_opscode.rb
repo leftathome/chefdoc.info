@@ -42,8 +42,8 @@ end
 
 libs = {}
 categories = []
-#@ckcss.get_cookbook_list().each do |cookbook|
-["1password","zlib"].each do |cookbook|
+@ckcss.get_cookbook_list().each do |cookbook|
+#["1password","zlib"].each do |cookbook|
   cbd = get_cookbook_data(cookbook)
   puts cbd.inspect
   u = URI(cbd["external_url"].start_with?("http") ? cbd["external_url"] : "http://" + cbd["external_url"])
