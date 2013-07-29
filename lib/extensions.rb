@@ -156,11 +156,13 @@ module YARD
         end
 
         # Remote gemfile from rubygems.org
-        require 'chef/knife/cookbook_site_show'
-        log.debug "Searching for remote cookbook via #{self.url}"
+        log.debug "Searching for remote cookbook via #{self.name} #{self.version}"
+        log.debug Chef::Knife::CookbookSiteShow.new().noauth_rest.get_rest("http://cookbooks.opscode.com/api/v1/cookbooks/#{self.name}/versions/#{self.version.gsub('.', '_')}")["file"]
+	log.debug "url is actually #{url}"
         Thread.new do
           begin
-            url = Chef::Knife::CookbookSiteShow.new().noauth_rest.get_rest(self.url())["file"]
+            url = Chef::Knife::CookbookSiteShow.new().noauth_rest.get_rest("http://cookbooks.opscode.com/api/v1/cookbooks/#{self.name}/versions/#{self.version.gsub('.', '_')}")["file"]
+	    log.debug "url will be #{url}"
             open(url) do |io|
               expand_cookbook(io)
               generate_yardoc
