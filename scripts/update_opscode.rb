@@ -43,9 +43,10 @@ categories = []
 #["1password","zlib"].each do |cookbook|
   cbd = get_cookbook_data(cookbook)
   cbu = cbd["external_url"]
-  if cbd["external_url"].nil? or cbd["external_url"] == "nil"
+  if cbd["external_url"].nil? or cbd["external_url"] == "nil" or cbd["external_url"] == ""
     cbu = cbd["latest_version"]
   end
+  #puts "cbu: #{cbu.inspect} from cbd: #{cbd.inspect}"
   u = URI(cbu.start_with?("http") ? cbu : "http://" + cbu)
   # default to http if the url scheme's unqualified
   u.scheme = "http" if u.scheme.nil?
