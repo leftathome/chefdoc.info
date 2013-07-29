@@ -43,7 +43,7 @@ categories = []
 #["1password","zlib"].each do |cookbook|
   cbd = get_cookbook_data(cookbook)
   cbu = cbd["external_url"]
-  if cbd["external_url"].nil?
+  if cbd["external_url"].nil? or cbd["external_url"] == "nil"
     cbu = cbd["latest_version"]
   end
   u = URI(cbu.start_with?("http") ? cbu : "http://" + cbu)
