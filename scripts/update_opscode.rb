@@ -10,10 +10,11 @@ class OpscodeCookbook
 
   def initialize(name, version, url)
     @name, @version, @url = name.to_s, version.to_s, url.to_s
+    puts "Received: #{@name}, #{@version}, #{@url}"
   end
 
   def to_s
-    "#{name} (#{version})" + url ? " @ #{url}" : ""
+    "#{name}#{url ? ":"+url : ""} (#{version})" # + url ? " @ #{url}" : ""
   end
 end
 
@@ -33,28 +34,34 @@ def pick_best_versions(versions)
     uniqversions |= [ver.version]
     (seen[ver.version] ||= []).send(:unshift, ver)
   end
-  uniqversions.map {|v| seen[v].first }
+  puts "Seen: #{seen}"
+  puts "Uniq: #{uniqversions}"
+  # look, this doesn't have to be this hard.
+  uniqversions
 end
 
 libs = {}
 categories = []
-@ckcss.get_cookbook_list().each do |cookbook|
+#@ckcss.get_cookbook_list().each do |cookbook|
+["1password","zlib"].each do |cookbook|
   cbd = get_cookbook_data(cookbook)
-  u = URI(cbd["external_url"])
+  puts cbd.inspect
+  u = URI(cbd["external_url"].start_with?("http") ? cbd["external_url"] : "http://" + cbd["external_url"])
   # default to http if the url scheme's unqualified
   u.scheme = "http" if u.scheme.nil?
-  cbd.versions.each do |version_url|
+  puts u.to_s
+  cbd["versions"].each do |version_url|
     v = version_url.split("/")[-1].gsub("_",".")
     (libs[cookbook] ||= []) << OpscodeCookbook.new(cookbook, v, u.to_s)
   end
-  categories << cbs[cookbook]["category"]
+  categories << cbd["category"]
 end
 
 categories.flatten!
 
-puts "cbs: #{cbs.inspect}"
+puts "libs: #{libs.inspect}"
 
-puts "categories: #{categories.inspect}"
+puts "categories: #{categories.flatten.inspect}"
 
 # Keep track of updated cookbooks
 changed_cookbooks = {}
@@ -67,20 +74,20 @@ File.open(REMOTE_CBS_FILE, 'w') do |file|
   libs.each do |k, v|
     line = pick_best_versions(v).join(' ')
     changed_cookbooks.delete(k) if changed_cookbooks[k] && changed_cookbooks[k].strip == line.strip
-    file.puts("#{k} #{line}")
+    file.puts("#{k}:#{v.first.url} #{line}")
   end
 end
 
 # Clear cache for gem frames page with new gems
 # TODO: improve this cache invalidation to be version specific
-changed_gems.keys.each do |gem|
+changed_cookbooks.keys.each do |gem|
   paths = [File.join(STATIC_PATH, 'cookbooks', gem), File.join(STATIC_PATH, 'list', 'cookbooks', gem)]
   paths.each do |path|
     system "rm -rf #{path}" if File.directory?(path)
   end
 end
 
-if changed_gems.size > 0
-  puts ">> Updated #{changed_gems.size} gems:"
-  puts changed_gems.keys.join(', ')
+if changed_cookbooks.size > 0
+  puts ">> Updated #{changed_cookbooks.size} gems:"
+  puts changed_cookbooks.keys.join(', ')
 end
