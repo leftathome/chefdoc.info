@@ -145,6 +145,7 @@ module YARD
   class CookbookVersion < LibraryVersion
     attr_accessor :url
       def load_yardoc_from_remote_cookbook
+        log.debug "You are definitely hitting load_yardoc_from_remote_cookbook"
         yfile = File.join(source_path, '.yardoc')
         if File.directory?(yfile)
           if File.exist?(File.join(yfile, 'complete'))
@@ -156,12 +157,11 @@ module YARD
         end
 
         # Remote gemfile from rubygems.org
-        log.debug "Searching for remote cookbook via #{self.name} #{self.version}"
-        log.debug Chef::Knife::CookbookSiteShow.new().noauth_rest.get_rest("http://cookbooks.opscode.com/api/v1/cookbooks/#{self.name}/versions/#{self.version.gsub('.', '_')}")["file"]
-	log.debug "url is actually #{url}"
+	require 'chef/knife/cookbook_site_show'
+        log.debug "Searching for remote cookbook #{self.name} #{self.version} via Opscode community API"
         Thread.new do
           begin
-            url = Chef::Knife::CookbookSiteShow.new().noauth_rest.get_rest("http://cookbooks.opscode.com/api/v1/cookbooks/#{self.name}/versions/#{self.version.gsub('.', '_')}")["file"]
+            url = ::Chef::Knife::CookbookSiteShow.new().noauth_rest.get_rest("http://cookbooks.opscode.com/api/v1/cookbooks/#{self.name}/versions/#{self.version.gsub('.', '_')}")["file"]
 	    log.debug "url will be #{url}"
             open(url) do |io|
               expand_cookbook(io)
@@ -183,30 +183,43 @@ module YARD
       private
       # once we've downloaded the tarball via the Opscode API, we need to expand it.
       def expand_cookbook(io)
-        log.debug "Expanding remote cookbook #{to_s(false)} to #{source_path}..."
-        FileUtils.mkdir_p(source_path)
+        File.open("/tmp/#{name}-#{version}.tar.gz",'wb') do |out|
+	  out.write(io)
+	  out.sync rescue nil
+	
 
+        log.debug "Expanding remote cookbook #{to_s(false)} to #{source_path}..."
+	begin
+          FileUtils.mkdir_p(source_path)
+	rescue Errno::EEXIST
+	  log.debug "Directory #{source_path} already exists."
+	end
           require 'rubygems/package/tar_reader'
-          reader = Gem::Package::TarReader.new(io)
-          reader.each do |pkg|
-            if pkg.full_name == 'data.tar.gz'
-              Zlib::GzipReader.wrap(pkg) do |gzio|
-                tar = Gem::Package::TarReader.new(gzio)
-                tar.each do |entry|
-                  mode = entry.header.mode
-                  file = File.join(source_path, entry.full_name)
-                  FileUtils.mkdir_p(File.dirname(file))
-                  File.open(file, 'wb') do |out|
-                    out.write(entry.read)
-                    out.fsync rescue nil
-                  end
-                end
-              end
-              break
-            end
-          end
+	  tar_extract = Gem::Package::TarReader.new(Zlib::GzipReader.wrap(io))
+	  tar_extract.rewind
+	  tar_extract.each do |entry|
+	    puts "--- considering #{entry.full_name} ---"
+	    fname = entry.full_name.sub("#{name}/","")
+	    next if fname == ""
+	    puts "------- I call it #{fname}"
+	    file = File.join(source_path, fname)
+	    begin
+	    if entry.directory?
+	      FileUtils.mkdir_p(file)
+	      next
+	    else
+	      FileUtils.mkdir_p(File.dirname(file))
+	    end
+	    rescue Errno::EEXIST
+	    end
+	    File.open(file,'wb') do |out|
+	      out.write(entry.read)
+	      out.fsync rescue nil
+	    end
+	  end
         end
       end
+  end
   end
 
   module CLI
