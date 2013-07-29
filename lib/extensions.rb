@@ -144,7 +144,67 @@ module YARD
   # Empty shell for now, we will extend here if necessary.
   class CookbookVersion < LibraryVersion
     attr_accessor :url
-  end
+      def load_yardoc_from_remote_cookbook
+        yfile = File.join(source_path, '.yardoc')
+        if File.directory?(yfile)
+          if File.exist?(File.join(yfile, 'complete'))
+            self.yardoc_file = yfile
+            return
+          else
+            raise LibraryNotPreparedError
+          end
+        end
+
+        # Remote gemfile from rubygems.org
+        require 'chef/knife/cookbook_site_show'
+        log.debug "Searching for remote cookbook via #{self.url}"
+        Thread.new do
+          begin
+            url = Chef::Knife::CookbookSiteShow.new().noauth_rest.get_rest(self.url())["file"]
+            open(url) do |io|
+              expand_cookbook(io)
+              generate_yardoc
+              clean_source
+            end
+            self.yardoc_file = yfile
+          rescue OpenURI::HTTPError
+          rescue IOError
+            self.yardoc_file = yfile
+          end
+        end
+        raise LibraryNotPreparedError
+      end
+
+      def source_path_for_remote_cookbook
+        File.join(::REMOTE_CBS_PATH, name[0].downcase, name, version)
+      end
+      private
+      # once we've downloaded the tarball via the Opscode API, we need to expand it.
+      def expand_cookbook(io)
+        log.debug "Expanding remote cookbook #{to_s(false)} to #{source_path}..."
+        FileUtils.mkdir_p(source_path)
+
+          require 'rubygems/package/tar_reader'
+          reader = Gem::Package::TarReader.new(io)
+          reader.each do |pkg|
+            if pkg.full_name == 'data.tar.gz'
+              Zlib::GzipReader.wrap(pkg) do |gzio|
+                tar = Gem::Package::TarReader.new(gzio)
+                tar.each do |entry|
+                  mode = entry.header.mode
+                  file = File.join(source_path, entry.full_name)
+                  FileUtils.mkdir_p(File.dirname(file))
+                  File.open(file, 'wb') do |out|
+                    out.write(entry.read)
+                    out.fsync rescue nil
+                  end
+                end
+              end
+              break
+            end
+          end
+        end
+      end
   end
 
   module CLI
