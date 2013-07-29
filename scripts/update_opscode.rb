@@ -45,6 +45,7 @@ categories = []
   cbu = cbd["external_url"]
   if cbd["external_url"].nil?
     cbu = cbd["latest_version"]
+  end
   u = URI(cbu.start_with?("http") ? cbu : "http://" + cbu)
   # default to http if the url scheme's unqualified
   u.scheme = "http" if u.scheme.nil?
