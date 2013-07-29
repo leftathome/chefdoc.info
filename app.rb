@@ -38,8 +38,10 @@ class DocServer < Sinatra::Base
 
     set :disallowed_projects, []
     set :disallowed_gems, []
+    set :disallowed_cookbooks, []
     set :whitelisted_projects, []
     set :whitelisted_gems, []
+    set :whitelisted_cookbooks, []
 
     return unless File.file?(CONFIG_FILE)
 
@@ -81,6 +83,7 @@ class DocServer < Sinatra::Base
     end
     opts[:options][:router] = GemsRouter
     set :gems_adapter, RackAdapter.new(*opts.values)
+    puts ">> Gem list loaded."
   rescue Errno::ENOENT
     log.error "No remote_gems file to load remote gems from, not serving gems."
   end
@@ -92,14 +95,16 @@ class DocServer < Sinatra::Base
     opts = adapter_options
     contents.each do |line|
       nameuri, *versions = *line.split(/\s+/)
-      name, uri = nameuri.split(":",2)
+      name, url = nameuri.split(":",2)
       opts[:libraries][name] = versions.map do |v|
-        CookbookVersion.new(name, v, nil, :remote_cookbook)
+        lib = CookbookVersion.new(name, v, nil, :remote_cookbook)
+        lib.url = url
+	lib
       end
-      puts "Libraries[#{name}] is now: #{opts[:libraries][name]}"
     end
     opts[:options][:router] = OpscodeRouter
     set :opscode_adapter, RackAdapter.new(*opts.values)
+    puts ">> Cookbook list loaded."
   rescue Errno::ENOENT
     log.error "No remote_cookbooks file to load remote cookbooks index from, not serving cookbooks.  Run that rake task again."
   end
@@ -337,6 +342,7 @@ class DocServer < Sinatra::Base
     end
   end
 
+  # list Rubygems gems by letter or show entire index
   get %r{^/gems(?:/([a-z])?)?$} do |letter|
     @letter = letter || 'a'
     @adapter = settings.gems_adapter
@@ -344,6 +350,7 @@ class DocServer < Sinatra::Base
     cache erb(:gems_index)
   end
 
+  # quick search against GitHub projects
   get %r{^/(?:(?:search|list)/)?github/([^/]+)/([^/]+)} do |username, project|
     @username, @project = username, project
     if settings.whitelisted_projects.include?("#{username}/#{project}")
@@ -355,6 +362,7 @@ class DocServer < Sinatra::Base
     result
   end
 
+  # quick search against Rubygems projects
   get %r{^/(?:(?:search|list)/)?gems/([^/]+)} do |gemname|
     return status(503) && "Cannot parse this gem" if settings.disallowed_gems.include?(gemname)
     if settings.whitelisted_gems.include?(gemname)
@@ -367,6 +375,7 @@ class DocServer < Sinatra::Base
     result
   end
 
+  # quick search against Opscode API cached cookbooks
   get %r{^/(?:(?:search|list)/)?opscode/([^/]+)} do |cbname|
     return status(503) && "Cannot parse this cookbook" if settings.disallowed_cookbooks.include?(cbname)
     if settings.whitelisted_cookbooks.include?(cbname)
