@@ -18,6 +18,7 @@ set :group, "www"
 set :deploy_to, "/var/www/apps/#{application}"
 set :deploy_via, :remote_cache
 default_run_options[:pty] = true
+set :use_sudo, false
 
 # scm settings
 set :repository, "https://github.com/leftathome/chefdoc.info.git"
