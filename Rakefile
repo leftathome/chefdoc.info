@@ -5,7 +5,7 @@ task :default => 'gems:update'
 namespace :server do
   desc 'Start the server'
   task :start do
-    sh "unicorn -E production -D -c config/unicorn.rb"
+    sh "unicorn -E development -D -c config/development.rb"
   end
 
   desc 'Restart the server'
