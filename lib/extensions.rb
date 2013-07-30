@@ -198,9 +198,7 @@ module YARD
 	  tar_extract = Gem::Package::TarReader.new(Zlib::GzipReader.wrap(io))
 	  tar_extract.rewind
 	  tar_extract.each do |entry|
-	    fname = entry.full_name.sub("#{name}/","")
-	    next if fname == ""
-	    file = File.join(source_path, fname)
+	    file = File.join(source_path, entry.full_name)
 	    begin
 	    if entry.directory?
 	      FileUtils.mkdir_p(file)
@@ -230,6 +228,7 @@ module YARD
   module CLI
     class Yardoc
       def yardopts(file = options_file)
+        puts "CLI::Yardoc::yardopts just got invoked with file=#{file}"
         list = IO.read(file).shell_split
         list.map {|a| %w(--plugin yard-chef -c --use-cache --db -b ).include?(a) ? '-o' : a }
       rescue Errno::ENOENT
