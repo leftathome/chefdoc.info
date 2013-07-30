@@ -219,7 +219,7 @@ module YARD
       # we use the yard-chef plugin on cookbooks.
       def generate_yardoc
         `cd #{source_path} &&
-          #{YARD::ROOT}/../bin/yardoc --plugin yard-chef -n -q &&
+          #{YARD::ROOT}/../bin/yardoc --plugin yard-chef -n -q **/*.rb &&
           touch .yardoc/complete`
       end
   end
